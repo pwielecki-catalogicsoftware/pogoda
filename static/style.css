@@ -1,0 +1,89 @@
+@font-face {
+    font-family: 'Nunito';
+    src: url('fonts/Nunito-Regular.ttf');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: url('fonts/Nunito-Bold.ttf');
+    font-weight: 700;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+}
+
+.ikona-pogody {
+    width: 400px;
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 5px #999);
+}
+
+#container-row {
+    display: flex;
+    flex-direction: row;
+    width: 800px;
+    height: 480px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    background-color: #5080b8;
+    overflow-y: auto;
+}
+
+#container-column {
+    display: flex;
+    flex-direction: column;
+    width: 697px;
+    height: 445px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    background-color: #5080b8;
+    overflow-y: auto;
+}
+
+.kolumna-lewa {
+    flex: 1;
+    align-content: center;
+    p, h1, h2 {
+        justify-content: left;
+        margin: 8px;
+        margin-left: 32px;
+    }
+}
+
+.kolumna-prawa {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.top-section,
+.bottom-section {
+    width: 100%;
+    padding: 10px 0;
+}
+
+.middle-section {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+    box-sizing: border-box;
+    min-width: 0;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px;
+}
+
+.middle-section > div {
+    padding: 4px;
+    flex: 1;
+    border-radius: 8px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 10px;
+}
