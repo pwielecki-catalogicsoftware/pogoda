@@ -1,12 +1,13 @@
 import requests
 import config
+import secret
 
 base_url = config.BASE_URL
 lat = config.LAT
 lon = config.LON
 units = config.UNITS
 lang = config.LANG
-api_key = config.API_KEY
+api_key = secret.API_KEY
 
 
 def fetch_weather_data(endpoint):
