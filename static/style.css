@@ -1,15 +1,23 @@
 @font-face {
     font-family: 'Nunito';
-    src: url('fonts/Nunito-Regular.ttf');
+    src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Regular.ttf');
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Nunito';
-    src: url('fonts/Nunito-Bold.ttf');
+    src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Bold.ttf');
     font-weight: 700;
     font-style: normal;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
@@ -26,12 +34,13 @@ body {
 #container-row {
     display: flex;
     flex-direction: row;
-    width: 800px;
-    height: 480px;
-    margin: 0 auto;
+    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
+    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
+    margin: 4.1% 6% 0% 6.875%; 
+    padding: 0;
     box-sizing: border-box;
     background-color: #5080b8;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 #container-column {
@@ -48,12 +57,16 @@ body {
 .kolumna-lewa {
     flex: 1;
     align-content: center;
-    p, h1, h2 {
-        justify-content: left;
-        margin: 8px;
-        margin-left: 32px;
-    }
 }
+
+.kolumna-lewa p,
+.kolumna-lewa h1,
+.kolumna-lewa h2 {
+    justify-content: left;
+    margin: 8px;
+    margin-left: 32px;
+}
+
 
 .kolumna-prawa {
     flex: 1;
