@@ -9,6 +9,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 output_file_current = f"{BASE_DIR}{os.sep}output{os.sep}pogoda_teraz.html"
 output_file_forecast = f"{BASE_DIR}{os.sep}output{os.sep}pogoda_potem.html"
 
+output_png_current = f"{BASE_DIR}{os.sep}output{os.sep}pogoda_teraz.png"
+output_png_forecast = f"{BASE_DIR}{os.sep}output{os.sep}pogoda_potem.png"
+
 
 # Współrzędne dla Komputerowej 8 w Warszawie
 LAT = "52.2091"
