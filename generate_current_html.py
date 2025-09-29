@@ -59,6 +59,6 @@ def generate_current_html(output_file="/output/pogoda_teraz.html"):
 
     with open(output_file_current, 'w', encoding='utf-8') as f:
         f.write(pogoda_teraz)
-    # webbrowser.open(output_file_current)
-    # print(data)
+    webbrowser.open(output_file_current)
+    print(data)
     return pogoda_teraz

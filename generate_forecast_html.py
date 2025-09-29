@@ -66,6 +66,6 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
 
     with open(output_file_forecast, 'w', encoding='utf-8') as f:
         f.write(pogoda_potem)
-    # webbrowser.open(output_file_forecast)
-    # print(data)
+    webbrowser.open(output_file_forecast)
+    print(data)
     return pogoda_potem
