@@ -1,13 +1,13 @@
 @font-face {
     font-family: 'Nunito';
-    src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Regular.ttf');
+    src: url('../static/fonts/Nunito-Regular.ttf');
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Nunito';
-    src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Bold.ttf');
+    src: url('../static/fonts/Nunito-Bold.ttf');
     font-weight: 700;
     font-style: normal;
 }

@@ -7,7 +7,7 @@ from config import (
 )
 from generate_current_html import generate_current_html
 from generate_forecast_html import generate_forecast_html
-from epaper_image_from_html import render_html_to_epaper
+# from epaper_image_from_html import render_html_to_epaper
 
 webbrowser.register(
     "firefox",
