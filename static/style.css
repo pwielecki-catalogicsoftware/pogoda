@@ -22,6 +22,7 @@ html, body {
 
 body {
     font-family: 'Nunito', sans-serif;
+    background-color: #5080b8;
 }
 
 .ikona-pogody {
@@ -39,7 +40,10 @@ body {
     margin: 4.1% 6% 0% 6.875%; 
     padding: 0;
     box-sizing: border-box;
-    background-color: #5080b8;
+    background-image: url('../static/icons/01d.svg';
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
     overflow: hidden;
 }
 
