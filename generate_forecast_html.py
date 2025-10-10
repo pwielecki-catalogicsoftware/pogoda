@@ -34,7 +34,6 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
                 <p>{datetime.fromtimestamp(data['list'][i]['dt']).strftime("%H:%M")}</p>
                 <p><img class="ikona-pogody" src="{icon_h_dir}" alt="ilustracja pogody"></p>
                 <p>{localize_and_round(data['list'][i]['main']['temp'],1)}°C</p>
-                <p>{localize_and_round(data['list'][i]['main']['feels_like'],1)}°C</p>
             </div>
             """
         return wynik
@@ -52,7 +51,7 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
         <div class="top-section">
             <h1>{commune_name}</h1>
             <h3>{format_datetime_pl_genitive(datetime.fromtimestamp(data['list'][0]['dt']))}</h3>
-            <h4>{data['list'][0]['weather'][0]['description']}</h4>
+            <h4>{data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
         </div>
         <div class="middle-section">
             {generuj_kolumny_prognoz(8)}

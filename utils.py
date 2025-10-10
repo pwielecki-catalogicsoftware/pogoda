@@ -1,6 +1,9 @@
 import locale
 import platform
 from datetime import datetime
+import os
+import signal
+import subprocess
 
 locale.setlocale(locale.LC_ALL, "pl_PL.UTF-8")
 
@@ -37,3 +40,20 @@ def format_datetime_pl_genitive(dt, capitalize=False):
         return f"{weekday.capitalize()}, {day} {month_full} {year} r."
     else:
         return f"{weekday}, {day} {month_full} {year} r."
+
+
+
+def kill_previous_instances(script_name):
+    """Ubija wszystkie poprzednie instancje danego skryptu"""
+    try:
+        result = subprocess.run(
+            ["pgrep", "-f", script_name],
+            capture_output=True,
+            text=True
+        )
+        pids = [int(pid) for pid in result.stdout.split() if int(pid) != os.getpid()]
+        for pid in pids:
+            print(f"Killing previous instance of {script_name} (PID={pid})")
+            os.kill(pid, signal.SIGTERM)
+    except Exception as e:
+        print(f"Nie udało się sprawdzić poprzednich instancji: {e}")

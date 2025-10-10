@@ -46,12 +46,13 @@ body {
 #container-column {
     display: flex;
     flex-direction: column;
-    width: 697px;
-    height: 445px;
-    margin: 0 auto;
+    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
+    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
+    margin: 4.1% 6% 0% 6.875%; 
+    padding: 0;
     box-sizing: border-box;
     background-color: #5080b8;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .kolumna-lewa {
@@ -67,7 +68,6 @@ body {
     margin-left: 32px;
 }
 
-
 .kolumna-prawa {
     flex: 1;
     display: flex;
@@ -77,7 +77,8 @@ body {
 .top-section,
 .bottom-section {
     width: 100%;
-    padding: 10px 0;
+    padding: 0 0 0 10px;
+    line-height: 0.75;
 }
 
 .middle-section {
@@ -98,5 +99,5 @@ body {
     border-radius: 8px;
     min-width: 0;
     overflow: hidden;
-    font-size: 10px;
+    font-size: 16px;
 }
