@@ -51,21 +51,23 @@ body {
     margin: 4.1% 6% 0% 6.875%; 
     padding: 0;
     box-sizing: border-box;
-    background-color: #5080b8;
+    /*background-color: #5080b8;*/
+    background-color: #4d9cf7;
     overflow: hidden;
 }
 
 .kolumna-lewa {
     flex: 1;
     align-content: center;
-}
-
-.kolumna-lewa p,
-.kolumna-lewa h1,
-.kolumna-lewa h2 {
     justify-content: left;
     margin: 8px;
-    margin-left: 32px;
+    margin-left: 8px;
+}
+
+.kolumna-lewa p {
+    font-size: 18px;
+    margin: 4px 0;
+    line-height: 1.4;
 }
 
 .kolumna-prawa {
@@ -74,11 +76,23 @@ body {
     align-items: center;
     justify-content: center;
 }
+
 .top-section,
 .bottom-section {
     width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     padding: 0 0 0 10px;
     line-height: 0.75;
+    max-height: 25%;
+}
+
+.top-section .ikona-pogody {
+    width: 150px;
+    max-width: 30%;
+    height: auto;
 }
 
 .middle-section {
@@ -99,5 +113,5 @@ body {
     border-radius: 8px;
     min-width: 0;
     overflow: hidden;
-    font-size: 16px;
+    font-size: 18px;
 }

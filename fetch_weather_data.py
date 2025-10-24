@@ -15,7 +15,7 @@ def fetch_weather_data(endpoint):
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        # print(url)
+        print(url)
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Błąd pobierania danych z endpointu {endpoint}: {e}")

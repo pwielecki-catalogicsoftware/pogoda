@@ -57,3 +57,8 @@ def kill_previous_instances(script_name):
             os.kill(pid, signal.SIGTERM)
     except Exception as e:
         print(f"Nie udało się sprawdzić poprzednich instancji: {e}")
+
+def get_cpu_temp():
+    output = subprocess.check_output(['vcgencmd', 'measure_temp']).decode()
+    temp_str = output.replace("temp=", "").replace("'C\n", "")
+    return float(temp_str)

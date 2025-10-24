@@ -40,8 +40,8 @@ def generate_current_html(output_file="/output/pogoda_teraz.html"):
         <div class="kolumna-lewa">
             <h1>{commune_name}</h1>
             <h2>{format_datetime_pl_genitive(datetime.fromtimestamp(data['dt']))}</h2>
-            <p>{weather_description.capitalize()}</p>
-            <p>Zachmurzenie: {clouds}</p>
+            <p>O {datetime.fromtimestamp(data['dt']).strftime("%H:%M")} {weather_description}</p>
+            <p>Zachmurzenie: {clouds}%</p>
             <p>Temperatura: {localize_and_round(actual_temperature,1)}°C</p>
             <p>(odczuwalna: {localize_and_round(feels_like,1)}°C)</p>
             <p>{pressure} hPa</p>

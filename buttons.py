@@ -30,7 +30,7 @@ LABELS = ["A", "B", "C", "D"]
 # =========================
 # INICJALIZACJA EKRANU
 # =========================
-inky = auto(ask_user=ASK_USER_INKY, verbose=False)
+inky = auto(ask_user=ASK_USER_INKY, verbose=True)
 inky.set_border(inky.BLACK)
 
 # =========================
@@ -44,8 +44,8 @@ from config import (
 )
 
 images = [
-    (output_file_current, output_png_current),
     (output_file_forecast, output_png_forecast),
+    (output_file_current, output_png_current),
 ]
 current_index = 0
 
@@ -54,6 +54,8 @@ current_index = 0
 # =========================
 rendering_in_progress = False
 D_press_start = None
+last_auto_b = time.time()       # czas ostatniego automatycznego "B"
+AUTO_B_INTERVAL = 15 * 60       # 15 minut w sekundach
 
 # =========================
 # FUNKCJE POMOCNICZE
@@ -134,5 +136,14 @@ while True:
             print("D long press detected. Rebooting Raspberry Pi...")
             subprocess.run(["sudo", "reboot"])
             D_press_start = None
+
+    # =========================
+    # AUTOMATYCZNE "naciśnięcie" B co 15 minut
+    # =========================
+    if time.time() - last_auto_b >= AUTO_B_INTERVAL:
+        if not rendering_in_progress:
+            current_index = (current_index + 1) % len(images)
+            show_image(current_index)
+            last_auto_b = time.time()
 
     time.sleep(0.1)

@@ -2,7 +2,7 @@ import webbrowser
 
 import os
 from config import output_file_forecast
-from fetch_weather_data import get_hourly_forecast
+from fetch_weather_data import get_hourly_forecast, get_current_weather
 # from main_script import icon_dir
 from utils import localize_and_round, format_datetime_pl_genitive
 from datetime import datetime
@@ -10,11 +10,17 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, '..', 'static')
 
+dt = datetime.fromtimestamp
 
 def generate_forecast_html(output_file="/output/pogoda_potem.html"):
     data = get_hourly_forecast()
     if not data:
         print(f"Brak danych pogodowych do prognozy.")
+        return
+
+    data_now = get_current_weather()
+    if not data_now:
+        print(f"Brak aktualnych danych pogodowych.")
         return
 
     css_path_abs = os.path.join(STATIC_DIR, "style.css")
@@ -31,7 +37,7 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
             icon_h_dir = f"../static/ikonyOpenWeather/{ikona_h}.png"
             wynik += f"""
             <div class="kolumna-{i}">
-                <p>{datetime.fromtimestamp(data['list'][i]['dt']).strftime("%H:%M")}</p>
+                <p>{dt(data['list'][i]['dt']).strftime("%H:%M")}</p>
                 <p><img class="ikona-pogody" src="{icon_h_dir}" alt="ilustracja pogody"></p>
                 <p>{localize_and_round(data['list'][i]['main']['temp'],1)}°C</p>
             </div>
@@ -49,15 +55,20 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
 <body>
     <div id="container-column">
         <div class="top-section">
-            <h1>{commune_name}</h1>
-            <h3>{format_datetime_pl_genitive(datetime.fromtimestamp(data['list'][0]['dt']))}</h3>
-            <h4>{data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
+            <div class="kolumna-lewa">
+                <h1>{commune_name}</h1>
+                <h3>{format_datetime_pl_genitive(dt(data['list'][0]['dt']))}</h3>
+                <h4>Obenie ({datetime.fromtimestamp(data_now['dt']).strftime("%H:%M")}) {data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
+            </div>
+            <div class="kolumna-prawa">
+                <img class="ikona-pogody" src="../static/ikonyOpenWeather/{data_now['weather'][0]['icon']}.png" alt="ilustracja pogody">
+            </div>
         </div>
         <div class="middle-section">
             {generuj_kolumny_prognoz(8)}
         </div>
         <div class="bottom-section">
-        <p>Sekcja dolna</p>
+        <p>Opady deszczu w ciągu najbliższych 3 godzin: {localize_and_round(data['list'][0]['rain']['3h'],1)} mm</p>
     </div>
 </body>
 </html>

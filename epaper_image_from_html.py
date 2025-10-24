@@ -41,7 +41,7 @@ def display_on_epaper(png_path, saturation=0.5):
     """
     Wyświetla obraz PNG na Inky Impression (auto-detekcja modelu).
     """
-    inky = auto(ask_user=False, verbose=False)  # wykrywa Twój ekran
+    inky = auto(ask_user=False, verbose=True)  # wykrywa Twój ekran
     inky.set_border(inky.BLACK)
 
     image = Image.open(png_path)
