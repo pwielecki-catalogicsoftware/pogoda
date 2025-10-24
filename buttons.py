@@ -135,4 +135,4 @@ while True:
             subprocess.run(["sudo", "reboot"])
             D_press_start = None
 
-    time.sleep(0.05)
+    time.sleep(0.1)
