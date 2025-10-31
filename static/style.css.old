@@ -1,0 +1,120 @@
+@font-face {
+    font-family: 'Nunito';
+    /* src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Regular.ttf');*/
+    src: url('/static/fonts/Nunito-Regular.ttf');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    /* src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Bold.ttf');*/
+    src: url('/static/fonts/Nunito-Bold.ttf');
+    font-weight: 700;
+    font-style: normal;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+}
+
+.ikona-pogody {
+    width: 400px;
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 5px #999);
+}
+
+#container-row {
+    display: flex;
+    flex-direction: row;
+    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
+    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
+    margin: 4.1% 6% 0% 6.875%; 
+    padding: 0;
+    box-sizing: border-box;
+    /* background-color: #5080b8;*/
+    background-color: #4d9cf7;
+    overflow: hidden;
+}
+
+#container-column {
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
+    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
+    margin: 4.1% 6% 0% 6.875%; 
+    padding: 0;
+    box-sizing: border-box;
+    /*background-color: #5080b8;*/
+    background-color: #4d9cf7;
+    overflow: hidden;
+}
+
+.kolumna-lewa {
+    flex: 1;
+    align-content: center;
+    justify-content: left;
+    margin: 8px;
+    margin-left: 8px;
+}
+
+.kolumna-lewa p {
+    font-size: 18px;
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+.kolumna-prawa {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.top-section,
+.bottom-section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 0 10px;
+    line-height: 0.75;
+    max-height: 25%;
+}
+
+.top-section .ikona-pogody {
+    width: 150px;
+    max-width: 30%;
+    height: auto;
+}
+
+.middle-section {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+    box-sizing: border-box;
+    min-width: 0;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px;
+}
+
+.middle-section > div {
+    padding: 4px;
+    flex: 1;
+    border-radius: 8px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 18px;
+}

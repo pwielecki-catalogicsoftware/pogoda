@@ -58,7 +58,7 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
             <div class="kolumna-lewa">
                 <h1>{commune_name}</h1>
                 <h3>{format_datetime_pl_genitive(dt(data['list'][0]['dt']))}</h3>
-                <h4>Obenie ({datetime.fromtimestamp(data_now['dt']).strftime("%H:%M")}) {data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
+                <h4>Obecnie ({datetime.fromtimestamp(data_now['dt']).strftime("%H:%M")}) {data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
             </div>
             <div class="kolumna-prawa">
                 <img class="ikona-pogody" src="../static/ikonyOpenWeather/{data_now['weather'][0]['icon']}.png" alt="ilustracja pogody">

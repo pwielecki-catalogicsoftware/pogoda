@@ -1,13 +1,15 @@
 @font-face {
     font-family: 'Nunito';
-    src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Regular.ttf');
+    /* src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Regular.ttf');*/
+    src: url('/static/fonts/Nunito-Regular.ttf');
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Nunito';
-    src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Bold.ttf');
+    /* src: url('/home/piter/repo/pogoda/static/fonts/Nunito-Bold.ttf');*/
+    src: url('/static/fonts/Nunito-Bold.ttf');
     font-weight: 700;
     font-style: normal;
 }
@@ -31,87 +33,54 @@ body {
     filter: drop-shadow(0 0 5px #999);
 }
 
-#container-row {
-    display: flex;
-    flex-direction: row;
-    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
-    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
-    margin: 4.1% 6% 0% 6.875%; 
+.ikona-pogody-teraz {
+    width: 280px;
+    max-width: 40%;
     padding: 0;
-    box-sizing: border-box;
-    background-color: #5080b8;
-    overflow: hidden;
+    height: auto;
+    justify-content: center;
 }
 
-#container-column {
-    display: flex;
-    flex-direction: column;
-    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
-    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
-    margin: 4.1% 6% 0% 6.875%; 
-    padding: 0;
-    box-sizing: border-box;
-    /*background-color: #5080b8;*/
-    background-color: #4d9cf7;
-    overflow: hidden;
-}
-
-.kolumna-lewa {
-    flex: 1;
-    align-content: center;
-    justify-content: left;
-    margin: 8px;
+.top-section-left {
+    grid-area: top-section-left;
+    line-height: 0.75;
     margin-left: 8px;
 }
 
-.kolumna-lewa p {
-    font-size: 18px;
-    margin: 4px 0;
-    line-height: 1.4;
+.top-section-right {
+    grid-area: top-section-right;
+    display: flex;          /* dodajemy flex */
+    justify-content: center; /* wyśrodkowanie poziome */
+    align-items: center;    /* wyśrodkowanie pionowe */
 }
 
-.kolumna-prawa {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+.forecast-0 { grid-area: forecast-0; font-size: 18px; }
+.forecast-1 { grid-area: forecast-1; font-size: 18px; }
+.forecast-2 { grid-area: forecast-2; font-size: 18px; }
+.forecast-3 { grid-area: forecast-3; font-size: 18px; }
+.forecast-4 { grid-area: forecast-4; font-size: 18px; }
+.forecast-5 { grid-area: forecast-5; font-size: 18px; }
+.forecast-6 { grid-area: forecast-6; font-size: 18px; }
+.forecast-7 { grid-area: forecast-7; font-size: 18px; }
 
-.top-section,
 .bottom-section {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 0 0 10px;
-    line-height: 0.75;
-    max-height: 25%;
-}
-
-.top-section .ikona-pogody {
-    width: 150px;
-    max-width: 30%;
-    height: auto;
-}
-
-.middle-section {
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-    overflow: hidden;
-    box-sizing: border-box;
-    min-width: 0;
+    grid-area: bottom-section;
     justify-content: center;
-    gap: 4px;
-    padding: 4px;
+    margin-left: 8px;
 }
 
-.middle-section > div {
-    padding: 4px;
-    flex: 1;
-    border-radius: 8px;
-    min-width: 0;
-    overflow: hidden;
-    font-size: 18px;
+
+#container {
+    height: calc(100% - 4.1% - 0%);   /* 100% - top - bottom */
+    width: calc(100% - 6.875% - 6%);  /* 100% - left - right */
+    margin: 4.1% 6% 0% 6.875%;
+    background-color: #4d9cf7;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 2fr 1fr;
+    grid-template-areas:
+    "top-section-left top-section-left top-section-left top-section-left top-section-right top-section-right top-section-right top-section-right"
+    "forecast-0 forecast-1 forecast-2 forecast-3 forecast-4 forecast-5 forecast-6 forecast-7"
+    "bottom-section bottom-section bottom-section bottom-section bottom-section bottom-section bottom-section bottom-section";
+    /* background-color: #5080b8;*/
 }
