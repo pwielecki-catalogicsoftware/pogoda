@@ -36,7 +36,7 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
             # icon_h_dir = os.path.join(STATIC_DIR, ikona_h)
             icon_h_dir = f"../static/ikonyOpenWeather/{ikona_h}.png"
             wynik += f"""
-            <div class="kolumna-{i}">
+            <div class="box forecast-{i}">
                 <p>{dt(data['list'][i]['dt']).strftime("%H:%M")}</p>
                 <p><img class="ikona-pogody" src="{icon_h_dir}" alt="ilustracja pogody"></p>
                 <p>{localize_and_round(data['list'][i]['main']['temp'],1)}°C</p>
@@ -53,22 +53,18 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
     <title>Prognoza na najbliższą dobę</title>
 </head>
 <body>
-    <div id="container-column">
-        <div class="top-section">
-            <div class="kolumna-lewa">
-                <h1>{commune_name}</h1>
-                <h3>{format_datetime_pl_genitive(dt(data['list'][0]['dt']))}</h3>
-                <h4>Obecnie ({datetime.fromtimestamp(data_now['dt']).strftime("%H:%M")}) {data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
-            </div>
-            <div class="kolumna-prawa">
-                <img class="ikona-pogody" src="../static/ikonyOpenWeather/{data_now['weather'][0]['icon']}.png" alt="ilustracja pogody">
-            </div>
+    <div id="container">
+        <div class="box top-section-left">
+            <h1>{commune_name}</h1>
+            <h3>{format_datetime_pl_genitive(dt(data['list'][0]['dt']))}</h3>
+            <h4>Obecnie ({datetime.fromtimestamp(data_now['dt']).strftime("%H:%M")}) {data['list'][0]['weather'][0]['description']}, {localize_and_round(data['list'][0]['main']['temp'],1)}°C</h4>
         </div>
-        <div class="middle-section">
+        <div class="box top-section-right">
+            <img class="ikona-pogody-teraz" src="../static/ikonyOpenWeather/10n.png" alt="ilustracja pogody">
+        </div>
             {generuj_kolumny_prognoz(8)}
-        </div>
-        <div class="bottom-section">
-        <p>Opady deszczu w ciągu najbliższych 3 godzin: {localize_and_round(data['list'][0]['rain']['3h'],1)} mm</p>
+        <div class="box bottom-section">
+        <p>Opady deszczu w ciągu najbliższych 3 godzin: {localize_and_round(data['list'][0].get('rain', {}).get('3h', 0), 1)} mm</p>
     </div>
 </body>
 </html>
