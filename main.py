@@ -52,6 +52,7 @@ if __name__ == '__main__':
     #     # print(get_cpu_temp())
 
     generate_forecast_html(output_file_forecast)
+    render_html_to_epaper(output_file_current, output_png_current)
 # generate_current_html(output_file_current)
 
 # import buttons
