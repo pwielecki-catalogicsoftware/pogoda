@@ -68,7 +68,7 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
             {generuj_kolumny_prognoz(8)}
         </div>
         <div class="bottom-section">
-        <p>Opady deszczu w ciągu najbliższych 3 godzin: {localize_and_round(data['list'][0]['rain']['3h'],1)} mm</p>
+        <p>Opady deszczu w ciągu najbliższych 3 godzin: X mm</p>
     </div>
 </body>
 </html>
