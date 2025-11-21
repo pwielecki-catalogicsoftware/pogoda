@@ -77,7 +77,13 @@ body {
     justify-content: center;
 }
 
-.top-section,
+.top-section h1,
+.top-section h3,
+.top-section h4 {
+    margin: 4px 0;
+    line-height: 1.1;
+}
+
 .bottom-section {
     width: 100%;
     display: flex;
