@@ -68,8 +68,7 @@ def generate_forecast_html(output_file="/output/pogoda_potem.html"):
             {generuj_kolumny_prognoz(8)}
         </div>
         <div class="bottom-section">
-        <p>Wschód słońca o {datetime.fromtimestamp(data_now['sys']['sunrise']).strftime('%H:%M')}</p>
-        <p>Zachód słońca o {datetime.fromtimestamp(data_now['sys']['sunset']).strftime('%H:%M')}</p>
+        <p>Wschód słońca o {datetime.fromtimestamp(data_now['sys']['sunrise']).strftime('%H:%M')}</br>Zachód słońca o {datetime.fromtimestamp(data_now['sys']['sunset']).strftime('%H:%M')}</p>
     </div>
 </body>
 </html>
