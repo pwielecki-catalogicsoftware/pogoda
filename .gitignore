@@ -1,4 +1,3 @@
 secret.py
-output/pogoda_potem.html
-output/pogoda_potem.png
-__pycache__
+output/
+__pycache__/
