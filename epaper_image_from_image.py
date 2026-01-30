@@ -35,10 +35,23 @@ def pick_random_image(folder=img_folder, exts=(".png", ".jpg", ".jpeg")):
         return None
     return random.choice(images)
 
-if __name__ == "__main__":
-    png_path = pick_random_image()
+
+def display_random_from_folder(folder=img_folder, exts=(".png", ".jpg", ".jpeg"), saturation=0.5):
+    """Wybiera losowy obraz i wyświetla go. Zwraca ścieżkę do wyświetlonego pliku albo None, jeśli pominięto."""
+    png_path = pick_random_image(folder, exts)
     if png_path is None:
+        return None
+    try:
+        display_on_epaper(png_path, saturation=saturation)
+        return png_path
+    except Exception as e:
+        print(f"Nie udało się wyświetlić {png_path}: {e}")
+        return None
+
+
+if __name__ == "__main__":
+    displayed = display_random_from_folder()
+    if displayed is None:
         print(f"Brak obrazów w katalogu {img_folder}; pomijam wyświetlenie (cron).")
     else:
-        print(f"Wybrano obraz: {png_path}")
-        display_on_epaper(png_path)
+        print(f"Wybrano i wyświetlono obraz: {displayed}")
