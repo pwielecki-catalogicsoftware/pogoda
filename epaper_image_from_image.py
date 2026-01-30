@@ -20,4 +20,4 @@ def display_on_epaper(png_path, saturation=0.5):
 
     inky.show()
 
-display_on_epaper("static\images\EWA_i_PIOTR_Bobrowy_Dwor_HIGHRES_19102025_0280.jpg")
+display_on_epaper("static/images/EWA_i_PIOTR_Bobrowy_Dwor_HIGHRES_19102025_0280.jpg")
