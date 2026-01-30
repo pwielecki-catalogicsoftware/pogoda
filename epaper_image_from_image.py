@@ -3,7 +3,9 @@ from PIL import Image
 from inky.auto import auto
 import random
 
-img_folder = Path("static/images/")
+# Bazowy katalog skryptu — to zapewni poprawne działanie, gdy cron uruchamia skrypt
+BASE_DIR = Path(__file__).resolve().parent
+img_folder = BASE_DIR / "static" / "images"
 
 def display_on_epaper(png_path, saturation=0.5):
     """
