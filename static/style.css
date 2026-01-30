@@ -18,6 +18,7 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    color: white;
 }
 
 body {
@@ -39,7 +40,8 @@ body {
     margin: 4.1% 6% 0% 6.875%; 
     padding: 0;
     box-sizing: border-box;
-    background-color: #5080b8;
+    /* background-color: #5080b8; */
+    background-color: #202A44;
     overflow: hidden;
 }
 
@@ -52,7 +54,7 @@ body {
     padding: 0;
     box-sizing: border-box;
     /*background-color: #5080b8;*/
-    background-color: #4d9cf7;
+    background-color: #202A44;
     overflow: hidden;
 }
 
@@ -134,7 +136,7 @@ body {
     border-radius: 8px;
     min-width: 0;
     overflow: hidden;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .middle-section > div p {
