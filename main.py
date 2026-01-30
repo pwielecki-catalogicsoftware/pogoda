@@ -23,34 +23,7 @@ kill_previous_instances(this_script)
 # )
 
 if __name__ == '__main__':
-    # index = 0
-    # while index < 5:
-    #     generate_forecast_html(output_file_forecast)
-    #     generate_current_html(output_file_current)
-    #     # print(get_cpu_temp())
-    #     # print('Przed generowaniem bieżącej')
-    #     print('Renderowanie pogody bieżącej')
-    #     render_html_to_epaper(output_file_forecast, output_png_forecast)
-    #     # print('Po generowaniu bieżącej')
-    #     # print(get_cpu_temp())
-    #     # print('Przed pierwszą drzemką')
-    #     print('Czekamy 5 minut')
-    #     sleep(300)
-    #     # print('Po pierwszej drzemce')
-    #     # print(get_cpu_temp())
-    #     # print('Przed generowaniem przyszłej')
-    #     print('Renderowanie prognozy na najbliższą dobę')
-    #     render_html_to_epaper(output_file_current, output_png_current)
-    #     # print('Po generowaniu przyszłej')
-    #     # print(get_cpu_temp())
-    #     # print('Przed drugą drzemką')
-    #     print('Czekamy 5 minut')
-    #     sleep(300)
-    #     # print('Przed drugiej drzemkce')
-    #     # print(get_cpu_temp())
-    #     index += 1
-    #     # print(get_cpu_temp())
-
+    
     generate_forecast_html(output_file_forecast)
     render_html_to_epaper(output_file_forecast, output_png_forecast)
 # generate_current_html(output_file_current)
