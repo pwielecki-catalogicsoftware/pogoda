@@ -1,6 +1,9 @@
 from pathlib import Path
 from PIL import Image
 from inky.auto import auto
+import random
+
+img_folder = Path("static/images/")
 
 def display_on_epaper(png_path, saturation=0.5):
     """
@@ -20,4 +23,22 @@ def display_on_epaper(png_path, saturation=0.5):
 
     inky.show()
 
-display_on_epaper("static/images/EWA_i_PIOTR_Bobrowy_Dwor_HIGHRES_19102025_0280.jpg")
+def pick_random_image(folder=img_folder, exts=(".png", ".jpg", ".jpeg")):
+    """Zwraca losowy plik obrazu z folderu lub None jeśli folder nie istnieje / jest pusty."""
+    p = Path(folder)
+    if not p.exists() or not p.is_dir():
+        # Folder nie istnieje — nie nadpisujemy wygenerowanego obrazu
+        return None
+    images = [f for f in p.iterdir() if f.is_file() and f.suffix.lower() in exts]
+    if not images:
+        # Brak plików — nic nie robimy
+        return None
+    return random.choice(images)
+
+if __name__ == "__main__":
+    png_path = pick_random_image()
+    if png_path is None:
+        print(f"Brak obrazów w katalogu {img_folder}; pomijam wyświetlenie (cron).")
+    else:
+        print(f"Wybrano obraz: {png_path}")
+        display_on_epaper(png_path)
