@@ -19,8 +19,8 @@ print(f"Backup crona zapisany w: {backup_file}")
 
 new_cron = """
 # Wprawka
-30 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/walentynkowy.py
-35 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/restore_cron.py
+34 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/walentynkowy.py
+37 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/restore_cron.py
 """
 
 
