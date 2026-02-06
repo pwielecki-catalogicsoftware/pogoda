@@ -11,17 +11,17 @@ subprocess.run(f"crontab -l > {backup_file}", shell=True, check=True)
 print(f"Backup crona zapisany w: {backup_file}")
 
 # 2. Nowy crontab (tutaj wpisz swoje zadania)
-# new_cron = """
-# # Przykładowy wpis: 14 lutego o 11:00
-# 0 11 14 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/walentynkowy.py
-# 0 0 15 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/restore_cron.py
-# """
-
 new_cron = """
-# Wprawka
-34 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/walentynkowy.py
-37 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/restore_cron.py
+# Przykładowy wpis: 14 lutego o 11:00
+0 10 14 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/walentynkowy.py
+59 23 14 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/restore_cron.py
 """
+
+# new_cron = """
+# # Wprawka
+# 34 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/walentynkowy.py
+# 37 15 6 2 * /home/piter/.virtualenvs/pimoroni/bin/python /home/piter/repo/pogoda/restore_cron.py
+# """
 
 
 
