@@ -3,7 +3,7 @@ import os
 
 app = Flask(__name__)
 
-PHOTOS_DIR = '/home/piter/repo/pogoda/images'
+PHOTOS_DIR = '/home/piter/repo/pogoda/static/images'
 ALLOWED = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 
 def allowed(filename):
