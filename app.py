@@ -1,9 +1,11 @@
 from flask import Flask, request, redirect, render_template, send_from_directory
 import os
+from PIL import Image
 
 app = Flask(__name__)
 
 PHOTOS_DIR = '/home/piter/repo/pogoda/static/images'
+THUMBS_DIR = '/home/piter/repo/pogoda/static/thumbs'
 ALLOWED = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 
 def allowed(filename):
@@ -19,8 +21,16 @@ def index():
 def upload():
     for file in request.files.getlist('photos'):
         if file and allowed(file.filename):
-            file.save(os.path.join(PHOTOS_DIR, file.filename))
+            filepath = os.path.join(PHOTOS_DIR, file.filename)
+            file.save(filepath)
+            img = Image.open(filepath)
+            img.thumbnail((300, 300))
+            img.save(os.path.join(THUMBS_DIR, file.filename), optimize=True, quality=75)
     return redirect('/')
+
+@app.route('/thumbs/<filename>')
+def thumb(filename):
+    return send_from_directory(THUMBS_DIR, filename)
 
 @app.route('/photos/<filename>')
 def photo(filename):

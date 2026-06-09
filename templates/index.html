@@ -46,7 +46,7 @@
   <div class="grid">
     {% for photo in photos %}
     <div class="thumb">
-      <img src="/photos/{{ photo }}" loading="lazy">
+      <img src="/thumbs/{{ photo }}" loading="lazy">
       <form action="/delete/{{ photo }}" method="post">
         <button class="del" onclick="return confirm('Usunąć to zdjęcie?')">×</button>
       </form>
