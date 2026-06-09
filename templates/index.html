@@ -34,7 +34,7 @@
     <div class="thumb">
       <img src="/photos/{{ photo }}" loading="lazy">
       <form action="/delete/{{ photo }}" method="post">
-        <button class="del" title="Usuń">×</button>
+        <button class="del" onclick="return confirm('Usunąć to zdjęcie?')">×</button>
       </form>
     </div>
     {% endfor %}
