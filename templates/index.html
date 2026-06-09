@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ramka – zdjęcia</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 1rem; }
+    .upload { background: #f0f0f0; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
+    input[type=file] { display: block; margin: 0.5rem 0; }
+    button { background: #333; color: white; border: none; padding: 0.5rem 1.2rem;
+             border-radius: 6px; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; }
+    .thumb { position: relative; }
+    .thumb img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; }
+    .del { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6);
+           color: white; border: none; border-radius: 50%; width: 24px; height: 24px;
+           cursor: pointer; font-size: 14px; line-height: 24px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h2>📷 Ramka zdjęciowa</h2>
+
+  <div class="upload">
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <label>Dodaj zdjęcia:</label>
+      <input type="file" name="photos" accept="image/*" multiple>
+      <button type="submit">Wyślij</button>
+    </form>
+  </div>
+
+  <div class="grid">
+    {% for photo in photos %}
+    <div class="thumb">
+      <img src="/photos/{{ photo }}" loading="lazy">
+      <form action="/delete/{{ photo }}" method="post">
+        <button class="del" title="Usuń">×</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
