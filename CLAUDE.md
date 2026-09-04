@@ -66,6 +66,9 @@ buttons.py              → pętla główna na urządzeniu: przyciski + auto-prz
   Ścieżki `PHOTOS_DIR` / `THUMBS_DIR` są **zahardkodowane pod Pi** – jeśli je ruszasz,
   przenieś do `config.py`.
 - `epaper_image_from_image.py` – losowy obraz z `static/images` na ekran (tryb ramki, z crona).
+- `image_prep.py` – kadrowanie zdjęcia w okno blendy i obróbka pod e-papier. Nie importuje
+  `inky`, więc podgląd zrobisz na PC: `python image_prep.py <zdjecie>`.
+- `check_frame_geometry.py` – kontrola, czy zdjęcia trafiają w ten sam prostokąt co pogoda.
   Brak katalogu/plików → `None` i cisza, żeby cron nie nadpisał wygenerowanej pogody.
 - `walentynkowy.py`, `overwrite_cron.py`, `restore_cron.py` – jednorazowa akcja okolicznościowa:
   podmiana crontaba z backupem do `my_cron_backup.txt` i przywróceniem. Wzorzec do
@@ -78,6 +81,39 @@ buttons.py              → pętla główna na urządzeniu: przyciski + auto-prz
   `my_cron_backup.txt`); log leci do `/tmp/git_autopull.log`.
 - `utils.kill_previous_instances` – `pgrep -f <nazwa skryptu>` + SIGTERM, żeby cron nie
   mnożył instancji.
+
+## Geometria ramki (blenda)
+
+Ekran jest przyklejony do płytki niesymetrycznie, więc passe-partout ramki zasłania
+nierówno. Offsety **zostały dobrane doświadczalnie na sprzęcie** i użytkownik uznaje
+układ pogody za wzorcowy – to on jest źródłem prawdy, nie wyliczenia z CSS-a.
+
+| | lewo | góra | prawo | dół |
+|---|---|---|---|---|
+| offset | 55 px | 33 px | 48 px | 0 px |
+
+Widoczne okno: **697 × 447 px** (panel 800 × 480). Zmierzone na `output/pogoda_potem.png`.
+
+Te same wartości żyją w **dwóch miejscach, które o sobie nie wiedzą**:
+
+- `static/style.css` – procentowo, `margin: 4.1% 6% 0% 6.875%` (ekrany pogody),
+- `config.py` – w pikselach, `BLEND_*` (ścieżka zdjęć).
+
+Po zmianie któregokolwiek uruchom `check_frame_geometry.py` – porównuje render pogody,
+stałe z configu i realny wynik `prepare_photo()`, i zwraca 1 przy rozjeździe.
+
+**Nie „poprawiaj” CSS-a pogody.** `height: calc(100% - 4.1% - 0%)` liczy procenty od
+wysokości, a `margin-top: 4.1%` od szerokości (tak działa CSS), więc kontener wychodzi
+na 493 px przy ekranie 480 px. Wygląda to na błąd, ale `overflow: hidden` ucina nadmiar
+dokładnie na dolnej krawędzi, a dolny offset i tak ma być zerowy – efekt jest pikselowo
+poprawny. „Naprawienie” tego odsunęłoby tło 13 px od dołu i zepsuło działający układ.
+
+Zdjęcia idą przez `image_prep.prepare_photo()`: kadr **„cover”** w okno blendy (bez
+czarnych pasów – użytkownik woli stracić skraj kadru niż oglądać letterbox), `draft()`
+przy dekodowaniu JPEG-a (6000×4000 to 72 MB bitmapy, a Pi Zero 2 W ma 512 MB RAM),
+`exif_transpose()`, LANCZOS, unsharp i kontrast. Parametry obróbki siedzą w `config.py`
+i **czekają na dobranie przy ramce** – na monitorze nie ocenisz, jak wypadają na palecie
+e-papieru. Ekrany pogody **nie** przechodzą przez ten moduł.
 
 ## Cron na Pi
 
@@ -100,6 +136,8 @@ nakładaniu się instancji, brak interaktywnych promptów.
   usunięcia z własnej inicjatywy; skasować dopiero, gdy sam o to poprosi.
 - `display_on_epaper()` jest skopiowane w trzech plikach (`epaper_image_from_html.py`,
   `epaper_image_from_image.py`, `walentynkowy.py`) – naturalny kandydat na jeden moduł.
+  Uwaga: wersja z `..._from_html.py` celowo **nie** kadruje przez `prepare_photo()`,
+  bo HTML ma blendę wbudowaną w CSS – scalając je, zachowaj tę różnicę.
 - `html_to_image.py` (html2image) i `server.py` (livereload) to pozostałości z prototypowania
   na PC; nie są w potoku. `generate_*_html.py` mają `STATIC_DIR` z `..` – ślad po innym układzie
   katalogów.
