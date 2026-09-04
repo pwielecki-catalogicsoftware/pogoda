@@ -1,21 +1,25 @@
 from pathlib import Path
-from PIL import Image
 from inky.auto import auto
-import random
+
+import config
+from image_prep import prepare_photo
 
 # Bazowy katalog skryptu — to zapewni poprawne działanie, gdy cron uruchamia skrypt
 BASE_DIR = Path(__file__).resolve().parent
 img_folder = BASE_DIR / "static" / "images"
 
-def display_on_epaper(png_path, saturation=0.5):
+def display_on_epaper(png_path, saturation=None):
     """
-    Wyświetla obraz PNG na Inky Impression (auto-detekcja modelu).
+    Wyświetla zdjęcie na Inky Impression (auto-detekcja modelu),
+    wkadrowane w okno widoczne spod blendy ramki.
     """
+    if saturation is None:
+        saturation = config.PHOTO_SATURATION
+
     inky = auto(ask_user=False, verbose=True)  # wykrywa Twój ekran
     inky.set_border(inky.BLACK)
 
-    image = Image.open(png_path)
-    image = image.resize(inky.resolution)  # dopasowanie do fizycznego ekranu
+    image = prepare_photo(png_path, inky.resolution)
 
     try:
         inky.set_image(image, saturation=saturation)
