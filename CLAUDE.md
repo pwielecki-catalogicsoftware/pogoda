@@ -70,15 +70,18 @@ buttons.py              → pętla główna na urządzeniu: przyciski + auto-prz
   `inky`, więc podgląd zrobisz na PC: `python image_prep.py <zdjecie>`.
 - `check_frame_geometry.py` – kontrola, czy zdjęcia trafiają w ten sam prostokąt co pogoda.
   Brak katalogu/plików → `None` i cisza, żeby cron nie nadpisał wygenerowanej pogody.
+- `display_schedule.py` – presety i decyzja „co teraz pokazać". Nie importuje `inky`
+  ani `PIL`, więc logikę przetestujesz na PC.
+- `tick.py` – jeden takt harmonogramu (z crona co minutę); `--force` wymusza przerysowanie.
+- `install_cron.py` – zakłada wszystkie wpisy crona projektu.
 - `walentynkowy.py`, `overwrite_cron.py`, `restore_cron.py` – jednorazowa akcja okolicznościowa:
   podmiana crontaba z backupem do `my_cron_backup.txt` i przywróceniem. Wzorzec do
   ewentualnych kolejnych „trybów specjalnych”.
 - `git_autopull.py` – po starcie systemu czeka na sieć (TCP do `github.com:443`, do 3 minut)
   i robi `git pull --ff-only` w katalogu repo. **Gałąź nie jest sprawdzana** – zakładamy, że
   urządzenie stoi na właściwej. Każdy błąd jest tylko logowany, kod wyjścia zawsze 0:
-  aktualizacja nie ma prawa zablokować startu stacji. Podpięty przez wpis `@reboot` w cronie,
-  który zakłada `install_autopull_cron.py` (idempotentnie, z backupem crontaba do
-  `my_cron_backup.txt`); log leci do `/tmp/git_autopull.log`.
+  aktualizacja nie ma prawa zablokować startu stacji. Podpięty przez wpis `@reboot`,
+  który zakłada `install_cron.py`; log leci do `/tmp/git_autopull.log`.
 - `utils.kill_previous_instances` – `pgrep -f <nazwa skryptu>` + SIGTERM, żeby cron nie
   mnożył instancji.
 
@@ -115,14 +118,54 @@ przy dekodowaniu JPEG-a (6000×4000 to 72 MB bitmapy, a Pi Zero 2 W ma 512 MB RA
 i **czekają na dobranie przy ramce** – na monitorze nie ocenisz, jak wypadają na palecie
 e-papieru. Ekrany pogody **nie** przechodzą przez ten moduł.
 
+## Harmonogram wyświetlania
+
+Model jest jeden – **sekwencja kroków**, przechodzona w kółko. Preset to nazwana sekwencja,
+tryb własny to sekwencja edytowalna. Dzięki temu interfejs nie rozdwaja się na dwa tryby.
+
+Podział źródeł jest celowy i **nie wolno go scalać**:
+
+- **presety żyją w `display_schedule.py`** – przyjeżdżają na ramkę z `git pull`;
+- **wybór użytkownika żyje w `schedule.json`**, który jest w `.gitignore`. Gdyby był
+  śledzony, pierwsza zmiana ustawień w przeglądarce zatrzymałaby `git pull --ff-only`
+  i zabiła autopull.
+
+Krok ze zdjęciem może mieć `zmieniaj_co` (minuty): bez niego przez cały krok wisi jedno
+zdjęcie, z nim krok rozwija się na kilka krótszych i przy każdym losuje się nowe.
+Rozwijaniem zajmuje się `rozwin()` – reszta logiki widzi po prostu dłuższą sekwencję.
+Zmienianie zdjęć **podwaja zużycie panelu**, dlatego `odswiezen_na_dobe()` liczy koszt
+każdej sekwencji; serwis webowy ma go pokazywać przy wyborze.
+
+Dwie decyzje, które wyglądają na niedoróbki, a są celowe:
+
+- **stan zapisuje się niezależnie od powodzenia renderu** (`tick.py`) – inaczej pusty
+  katalog zdjęć zatrzymałby sekwencję na zawsze i ramka nigdy nie doszłaby do prognozy;
+- **zmiana ustawień przerywa bieżący krok natychmiast** – `co_teraz()` porównuje podpis
+  sekwencji, więc kliknięcie w przeglądarce działa od razu, a nie po pół godzinie.
+
 ## Cron na Pi
 
-Aplikacja nie jest demonem – wszystko chodzi z crona:
+Aplikacja nie jest demonem, ale cron **nie decyduje już o tym, co jest na ekranie** –
+tylko tyka. Wpisy projektu żyją w jednym bloku między markerami i zakłada je
+`install_cron.py` (idempotentnie, z backupem do `my_cron_backup.txt`, nie tykając
+wpisów spoza projektu):
 
-- render pogody **co 10 minut**,
-- losowe zdjęcie z `static/images` **co 10 minut, z przesunięciem o 2 minuty**,
-- `@reboot` → `git_autopull.py` (aktualizacja repo po starcie),
-- `buttons.py` (pętla przycisków) uruchamiany osobno, gdy jest potrzebny.
+- `* * * * *` → `tick.py` – jeden takt harmonogramu,
+- `@reboot` → `git_autopull.py` (aktualizacja repo po starcie).
+
+Takt sprawdza, czy bieżący krok sekwencji się wyczerpał. Jeśli nie, kończy się po ułamku
+sekundy **bez importowania `inky` i `PIL`** – ciężkie moduły ładują się dopiero przy
+faktycznym renderze. Blokada plikowa (`output/.tick.lock`) pilnuje, żeby dwa takty nie
+pisały naraz po SPI; render pogody bywa dłuższy niż minuta.
+
+Dlaczego takt, a nie demon: proces kończący się po każdym takcie nie ma jak spuchnąć
+na 512 MB, a gdy raz padnie, następna minuta go naprawia. Demon, który padłby w nocy,
+zostawiłby zamrożoną ramkę do rana. Czasy trwania i tak nie mieszczą się w składni
+crontaba – cykl 35 minut nie zapisze się jako `*/35`, bo `*/n` łamie się, gdy `n` nie
+dzieli 60.
+
+`buttons.py` **nie jest uruchamiany** – przyciski nie są obsługiwane i użytkownik chce
+sterować wszystkim przez serwis webowy. Kod zostaje uśpiony, nie rozwijaj go bez prośby.
 
 Skrypty muszą więc same dbać o kontekst: ścieżki z `config.py`/`BASE_DIR` (nigdy względne
 do CWD), pełna ścieżka do interpretera z venva, `kill_previous_instances` przeciw
