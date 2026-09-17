@@ -234,3 +234,53 @@ def co_teraz(teraz=None, ustawienia=None):
         return sekwencja[nastepny], nastepny, sekwencja, "koniec kroku"
 
     return None, indeks, sekwencja, "krok trwa"
+
+
+def sekund_do_zmiany(ustawienia=None, teraz=None):
+    """Ile sekund zostało do końca bieżącego kroku (0, gdy już się wyczerpał).
+
+    Pasek stanu w serwisie odlicza od tej wartości. Po zejściu do zera pokazuje
+    „zmiana lada moment" zamiast „za 0 min" – takt bywa opóźniony przez render
+    albo zajętą blokadę, a licznik wiszący na zerze wygląda jak zawieszenie.
+    """
+    teraz = teraz or datetime.now()
+    sekwencja = rozwin(aktywna_sekwencja(ustawienia))
+    stan = _wczytaj_stan()
+    if not stan:
+        return 0
+    indeks = stan.get("indeks", 0) % len(sekwencja)
+    try:
+        od = datetime.fromisoformat(stan["od"])
+    except (KeyError, TypeError, ValueError):
+        return 0
+    koniec = od + timedelta(minutes=sekwencja[indeks]["minuty"])
+    return max(0, int((koniec - teraz).total_seconds()))
+
+
+def wymus_nastepny(ustawienia=None, teraz=None):
+    """Skraca bieżący krok do zera, żeby najbliższy takt przeszedł dalej.
+
+    Nie rysuje nic sama – rysowaniem zajmuje się wyłącznie tick.py, żeby ekran
+    miał jednego właściciela.
+    """
+    teraz = teraz or datetime.now()
+    sekwencja = rozwin(aktywna_sekwencja(ustawienia))
+    stan = _wczytaj_stan() or {}
+    indeks = stan.get("indeks", 0) % len(sekwencja)
+    minione = teraz - timedelta(minutes=sekwencja[indeks]["minuty"])
+    zapisz_stan(indeks, sekwencja, minione)
+
+
+def indeks_typu(typ, ustawienia=None):
+    """Pozycja pierwszego kroku danego typu w rozwiniętej sekwencji, albo None."""
+    sekwencja = rozwin(aktywna_sekwencja(ustawienia))
+    for indeks, krok in enumerate(sekwencja):
+        if krok["typ"] == typ:
+            return indeks
+    return None
+
+
+def ustaw_krok(indeks, ustawienia=None, teraz=None):
+    """Przestawia sekwencję na wskazany krok, licząc jego czas od teraz."""
+    sekwencja = rozwin(aktywna_sekwencja(ustawienia))
+    zapisz_stan(indeks % len(sekwencja), sekwencja, teraz or datetime.now())

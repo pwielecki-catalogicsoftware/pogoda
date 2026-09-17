@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block tytul %}Ramka – harmonogram{% endblock %}
+{% block style %}
+    .stan-co { font-size: 1.05rem; font-weight: 600; }
+    .stan-kiedy { font-size: 0.85rem; color: #666; }
+    .preset { display: flex; gap: 0.75rem; align-items: flex-start; background: white;
+              border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem 0.9rem;
+              margin-bottom: 0.5rem; cursor: pointer; }
+    .preset.wybrany { border: 2px solid #333; padding: calc(0.75rem - 1px) calc(0.9rem - 1px); }
+    .preset-nazwa { font-weight: 600; display: block; }
+    .preset-opis { font-size: 0.85rem; color: #666; display: block; margin-top: 0.15rem; }
+    .licznik { text-align: right; white-space: nowrap; }
+    .licznik-liczba { font-weight: 600; display: block; }
+    .licznik-etykieta { font-size: 0.75rem; color: #666; display: block; }
+    .krok { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+            margin-bottom: 0.5rem; }
+    .krok label { font-size: 0.85rem; color: #555; display: flex; gap: 0.35rem;
+                  align-items: center; }
+    .wylaczony { opacity: 0.5; }
+    .akcje { display: flex; gap: 0.5rem; align-items: center; }
+    .komunikat { font-size: 0.85rem; color: #2a7; margin-left: auto; opacity: 0;
+                 transition: opacity 0.2s; }
+    .komunikat.blad { color: #c33; }
+{% endblock %}
+{% block tresc %}
+  <div class="panel">
+    <div class="stan-co" id="stan-co">—</div>
+    <div class="stan-kiedy" id="stan-kiedy">wczytywanie…</div>
+  </div>
+
+  <div id="lista">
+    {% for p in presety %}
+    <label class="preset {{ 'wybrany' if ustawienia.aktywny == p.id }}" data-id="{{ p.id }}">
+      <input type="radio" name="preset" value="{{ p.id }}"
+             {{ 'checked' if ustawienia.aktywny == p.id }}>
+      <span style="flex:1">
+        <span class="preset-nazwa">{{ p.nazwa }}</span>
+        <span class="preset-opis">{% for k in p.rozwiniete %}{{ 'zdjęcie' if k.typ == 'zdjecie' else 'prognoza' }} {{ k.minuty }} min{{ ' → ' if not loop.last }}{% endfor %}</span>
+      </span>
+      <span class="licznik">
+        <span class="licznik-liczba">{{ p.odswiezen }}</span>
+        <span class="licznik-etykieta">odświeżeń/dobę</span>
+      </span>
+    </label>
+    {% endfor %}
+
+    <label class="preset {{ 'wybrany' if ustawienia.aktywny == 'wlasny' }}" data-id="wlasny">
+      <input type="radio" name="preset" value="wlasny"
+             {{ 'checked' if ustawienia.aktywny == 'wlasny' }}>
+      <span style="flex:1">
+        <span class="preset-nazwa">Ustawienia własne</span>
+        <span class="preset-opis" id="wlasny-opis"></span>
+      </span>
+      <span class="licznik">
+        <span class="licznik-liczba" id="wlasny-licznik">{{ wlasny_odswiezen }}</span>
+        <span class="licznik-etykieta">odświeżeń/dobę</span>
+      </span>
+    </label>
+  </div>
+
+  <div class="panel" id="edytor" style="margin-top:1rem">
+    <div style="font-weight:600;margin-bottom:0.5rem">Własna sekwencja</div>
+    <div id="kroki"></div>
+    <button type="button" class="wtorny" id="dodaj">Dodaj krok</button>
+  </div>
+
+  <div class="akcje">
+    <button type="button" id="nastepny">Następny ekran</button>
+    <button type="button" class="wtorny" id="pogoda">Pokaż pogodę teraz</button>
+    <span class="komunikat" id="komunikat"></span>
+  </div>
+
+<script>
+const MIN = {{ min_minuty }};
+let wlasny = {{ ustawienia.wlasny | tojson }};
+let aktywny = {{ ustawienia.aktywny | tojson }};
+let zostalo = 0;
+let opisKroku = "";
+
+const el = (id) => document.getElementById(id);
+const nazwaTypu = (t) => (t === "zdjecie" ? "zdjęcie" : "prognoza");
+
+function komunikat(tekst, blad) {
+  const k = el("komunikat");
+  k.textContent = tekst;
+  k.className = "komunikat" + (blad ? " blad" : "");
+  k.style.opacity = "1";
+  setTimeout(() => { k.style.opacity = "0"; }, 2000);
+}
+
+function pokazCzas() {
+  // Bez licznika tykającego co sekundę, więc czas podajemy jako górne
+  // ograniczenie – „za <10 min" starzeje się łagodnie, a dokładna liczba
+  // zaczęłaby kłamać już po minucie. Zera nie pokazujemy wcale: takt bywa
+  // opóźniony przez render albo zajętą blokadę, a „za 0 min" wygląda jak awaria.
+  const opis = zostalo <= 0
+    ? "Zmiana lada moment"
+    : "Następna zmiana za <" + Math.ceil(zostalo / 60) + " min";
+  el("stan-kiedy").textContent = opisKroku ? opis + " · krok " + opisKroku : opis;
+}
+
+function pokazStan(dane) {
+  el("stan-co").textContent = "Na ekranie: " + nazwaTypu(dane.typ);
+  zostalo = dane.sekund_do_zmiany;
+  opisKroku = (dane.indeks + 1) + " z " + dane.ile_krokow;
+  pokazCzas();
+}
+
+async function wyslij(sciezka, tresc) {
+  try {
+    const opcje = tresc
+      ? {method: "POST", headers: {"Content-Type": "application/json"},
+         body: JSON.stringify(tresc)}
+      : {method: "POST"};
+    const odp = await fetch(sciezka, opcje);
+    const dane = await odp.json();
+    if (!odp.ok) { komunikat(dane.blad || "Nie udało się", true); return null; }
+    pokazStan(dane);
+    return dane;
+  } catch (e) {
+    komunikat("Brak połączenia z ramką", true);
+    return null;
+  }
+}
+
+async function zapisz() {
+  const dane = await wyslij("/harmonogram/zapisz", {aktywny: aktywny, wlasny: wlasny});
+  if (!dane) return;
+  if (aktywny === "wlasny") el("wlasny-licznik").textContent = dane.odswiezen;
+  komunikat("Zapisano");
+}
+
+function rysujKroki() {
+  const wlaczony = aktywny === "wlasny";
+  el("edytor").className = "panel" + (wlaczony ? "" : " wylaczony");
+  el("dodaj").disabled = !wlaczony;
+  el("wlasny-opis").textContent = wlasny
+    .map((k) => nazwaTypu(k.typ) + " " + k.minuty + " min"
+                + (k.zmieniaj_co ? " (co " + k.zmieniaj_co + ")" : ""))
+    .join(" → ");
+
+  const pojemnik = el("kroki");
+  pojemnik.textContent = "";
+  wlasny.forEach((k, i) => {
+    const wiersz = document.createElement("div");
+    wiersz.className = "krok";
+
+    const typ = document.createElement("select");
+    typ.disabled = !wlaczony;
+    [["zdjecie", "zdjęcie"], ["prognoza", "prognoza"]].forEach((para) => {
+      const o = document.createElement("option");
+      o.value = para[0];
+      o.textContent = para[1];
+      o.selected = k.typ === para[0];
+      typ.appendChild(o);
+    });
+    typ.onchange = () => {
+      wlasny[i].typ = typ.value;
+      if (typ.value !== "zdjecie") delete wlasny[i].zmieniaj_co;
+      rysujKroki();
+      zapisz();
+    };
+    wiersz.appendChild(typ);
+
+    const minuty = document.createElement("input");
+    minuty.type = "number";
+    minuty.min = MIN;
+    minuty.step = 1;
+    minuty.value = k.minuty;
+    minuty.disabled = !wlaczony;
+    minuty.style.width = "4.5rem";
+    minuty.onchange = () => {
+      wlasny[i].minuty = Math.max(MIN, parseInt(minuty.value, 10) || MIN);
+      rysujKroki();
+      zapisz();
+    };
+    wiersz.appendChild(minuty);
+    wiersz.appendChild(document.createTextNode("min"));
+
+    if (k.typ === "zdjecie" && k.minuty > MIN) {
+      const etykieta = document.createElement("label");
+      const ptaszek = document.createElement("input");
+      ptaszek.type = "checkbox";
+      ptaszek.checked = Boolean(k.zmieniaj_co);
+      ptaszek.disabled = !wlaczony;
+      ptaszek.onchange = () => {
+        if (ptaszek.checked) wlasny[i].zmieniaj_co = Math.min(10, k.minuty);
+        else delete wlasny[i].zmieniaj_co;
+        rysujKroki();
+        zapisz();
+      };
+      const co = document.createElement("input");
+      co.type = "number";
+      co.min = MIN;
+      co.step = 1;
+      co.value = k.zmieniaj_co || 10;
+      co.disabled = !wlaczony || !k.zmieniaj_co;
+      co.style.width = "4rem";
+      co.onchange = () => {
+        wlasny[i].zmieniaj_co = Math.max(MIN, parseInt(co.value, 10) || MIN);
+        rysujKroki();
+        zapisz();
+      };
+      etykieta.appendChild(ptaszek);
+      etykieta.appendChild(document.createTextNode("zmieniaj zdjęcia co"));
+      etykieta.appendChild(co);
+      etykieta.appendChild(document.createTextNode("min"));
+      wiersz.appendChild(etykieta);
+    }
+
+    const usun = document.createElement("button");
+    usun.type = "button";
+    usun.className = "wtorny";
+    usun.textContent = "×";
+    usun.setAttribute("aria-label", "Usuń krok");
+    usun.style.marginLeft = "auto";
+    usun.disabled = !wlaczony || wlasny.length < 2;
+    usun.onclick = () => {
+      wlasny.splice(i, 1);
+      rysujKroki();
+      zapisz();
+    };
+    wiersz.appendChild(usun);
+
+    pojemnik.appendChild(wiersz);
+  });
+}
+
+document.querySelectorAll('input[name="preset"]').forEach((radio) => {
+  radio.onchange = () => {
+    aktywny = radio.value;
+    document.querySelectorAll(".preset").forEach((karta) => {
+      karta.classList.toggle("wybrany", karta.dataset.id === aktywny);
+    });
+    rysujKroki();
+    zapisz();
+  };
+});
+
+el("dodaj").onclick = () => {
+  wlasny.push({typ: "zdjecie", minuty: 10});
+  rysujKroki();
+  zapisz();
+};
+// Odpowiedź na akcję ściga się z taktem, który sama uruchamia, więc bywa
+// o krok spóźniona. Jedno dopytanie po chwili wyrównuje pasek stanu.
+function dosynchronizuj() {
+  setTimeout(() => {
+    fetch("/stan").then((r) => r.json()).then(pokazStan).catch(() => {});
+  }, 2000);
+}
+
+el("nastepny").onclick = () => wyslij("/akcja/nastepny").then((d) => {
+  if (d) { komunikat("Przełączono"); dosynchronizuj(); }
+});
+el("pogoda").onclick = () => wyslij("/akcja/pogoda").then((d) => {
+  if (d) { komunikat("Pokazuję pogodę"); dosynchronizuj(); }
+});
+
+rysujKroki();
+fetch("/stan").then((r) => r.json()).then(pokazStan).catch(() => {
+  el("stan-kiedy").textContent = "brak połączenia z ramką";
+});
+setInterval(() => {
+  fetch("/stan").then((r) => r.json()).then(pokazStan).catch(() => {});
+}, 30000);
+</script>
+{% endblock %}
