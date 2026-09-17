@@ -70,6 +70,8 @@ buttons.py              → pętla główna na urządzeniu: przyciski + auto-prz
   `inky`, więc podgląd zrobisz na PC: `python image_prep.py <zdjecie>`.
 - `check_frame_geometry.py` – kontrola, czy zdjęcia trafiają w ten sam prostokąt co pogoda.
   Brak katalogu/plików → `None` i cisza, żeby cron nie nadpisał wygenerowanej pogody.
+- `app.py` – serwis webowy: zdjęcia i harmonogram; `templates/base.html` trzyma
+  wspólny układ z zakładkami.
 - `display_schedule.py` – presety i decyzja „co teraz pokazać". Nie importuje `inky`
   ani `PIL`, więc logikę przetestujesz na PC.
 - `tick.py` – jeden takt harmonogramu (z crona co minutę); `--force` wymusza przerysowanie.
@@ -117,6 +119,37 @@ przy dekodowaniu JPEG-a (6000×4000 to 72 MB bitmapy, a Pi Zero 2 W ma 512 MB RA
 `exif_transpose()`, LANCZOS, unsharp i kontrast. Parametry obróbki siedzą w `config.py`
 i **czekają na dobranie przy ramce** – na monitorze nie ocenisz, jak wypadają na palecie
 e-papieru. Ekrany pogody **nie** przechodzą przez ten moduł.
+
+## Serwis webowy
+
+Flask (`app.py`, port 5000) na dwóch zakładkach: **Zdjęcia** (wgrywanie i kasowanie)
+oraz **Harmonogram**. Szablony dziedziczą z `templates/base.html` – style i nawigacja
+są tam raz, strony dokładają tylko swoją treść.
+
+**Serwis nigdy nie rysuje po ekranie.** Zapisuje ustawienia albo przestawia stan,
+po czym odpala `tick.py --force` przez `subprocess.Popen` i nie czeka na wynik –
+render e-papieru trwa kilkadziesiąt sekund, a strona ma odpowiedzieć od razu.
+Rysowanie zostaje wyłączną robotą taktu, więc ekran ma jednego właściciela.
+
+Trasy harmonogramu: `GET /harmonogram`, `POST /harmonogram/zapisz` (JSON),
+`POST /akcja/nastepny`, `POST /akcja/pogoda` (przewija do najbliższego kroku
+z prognozą; 400, gdy sekwencja jej nie zawiera), `GET /stan` dla paska stanu.
+
+Rzeczy, które wyglądają na drobiazgi, a mają powód:
+
+- **Zapis jest automatyczny**, bez przycisku „Zapisz" – na telefonie mniej klikania,
+  a cofnięcie zmiany to wybranie innego presetu.
+- **Odpowiedź na akcję ściga się z taktem, który sama uruchamia**, więc bywa o krok
+  spóźniona. Strona dopytuje `/stan` po dwóch sekundach i wyrównuje pasek.
+- **Licznik po zejściu do zera pokazuje „zmiana lada moment"**, nie „za 0 min" –
+  takt bywa opóźniony, a zero wiszące na ekranie wygląda jak awaria.
+- **Serwer waliduje sekwencję ponownie** (`_popraw_kroki`), bo dane przychodzą
+  z przeglądarki. Zapisujemy to, co przeszło walidację, nie to, co przyszło.
+- **`secure_filename` przy każdej nazwie pliku** – bez tego nazwa z `../`
+  zapisałaby zdjęcie poza katalogiem.
+
+Serwis **nie ma uwierzytelniania** – stoi w domowym LAN-ie i tak ma zostać.
+Gdyby kiedykolwiek miał wyjść poza sieć domową, to jest pierwsza rzecz do dołożenia.
 
 ## Harmonogram wyświetlania
 
