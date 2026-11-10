@@ -74,7 +74,12 @@ buttons.py              → pętla główna na urządzeniu: przyciski + auto-prz
   wspólny układ z zakładkami.
 - `display_schedule.py` – presety i decyzja „co teraz pokazać". Nie importuje `inky`
   ani `PIL`, więc logikę przetestujesz na PC.
-- `tick.py` – jeden takt harmonogramu (z crona co minutę); `--force` wymusza przerysowanie.
+- `tick.py` – jeden takt harmonogramu (z crona co minutę); `--force` wymusza przerysowanie,
+  `--pokaz <typ>` rysuje raz na zlecenie pilota, nie ruszając sekwencji.
+- `komenda.py` – stan ostatniej komendy z pilota i limit tempa. Nie importuje `inky`
+  ani `PIL`.
+- `historia_zdjec.py` – pamięć ostatnio pokazanych zdjęć, żeby losowanie się nie
+  powtarzało. Też czysty Python.
 - `install_cron.py` – zakłada wszystkie wpisy crona projektu.
 - `walentynkowy.py`, `overwrite_cron.py`, `restore_cron.py` – jednorazowa akcja okolicznościowa:
   podmiana crontaba z backupem do `my_cron_backup.txt` i przywróceniem. Wzorzec do
@@ -175,6 +180,37 @@ Dwie decyzje, które wyglądają na niedoróbki, a są celowe:
   katalog zdjęć zatrzymałby sekwencję na zawsze i ramka nigdy nie doszłaby do prognozy;
 - **zmiana ustawień przerywa bieżący krok natychmiast** – `co_teraz()` porównuje podpis
   sekwencji, więc kliknięcie w przeglądarce działa od razu, a nie po pół godzinie.
+
+## Pilot – komendy z zegarka
+
+`watchPossibly` dostaje ekran „Ramka" z dwoma kafelkami: prognoza i zdjęcie.
+Naciśnięcie kafelka to **jednorazowe zlecenie renderu**, a nie przestawienie
+harmonogramu – sekwencja biegnie dalej nietknięta i odzyskuje ekran przy
+najbliższym takcie, który uzna bieżący krok za wyczerpany. Pilot niczego nie
+zapamiętuje i niczego nie psuje.
+
+- `POST /akcja/pokaz` z `{"co": "prognoza"|"zdjecie"}`: serwis zapisuje zlecenie
+  i odpala `tick.py --pokaz <typ>`. Odpowiada natychmiast – render trwa
+  kilkadziesiąt sekund, a zegarek po kilkunastu i tak zasypia.
+- Kody: **200** z pełnym stanem, **400** nieznany rodzaj widoku, **409** ramka
+  właśnie rysuje, **429** za wcześnie (`za_ile_s` mówi, ile jeszcze).
+- **Wynik musi gdzieś poczekać**, bo nie ma go komu podać od razu: `komenda.py`
+  trzyma go w `output/komenda.json`, a zegarek odczytuje przy następnym wejściu
+  na ekran przez `GET /stan`. Zlecenie bez wyniku starsze niż `POKAZ_MAX_CZAS_S`
+  raportuje się jako `przepadlo` – takt zabity w połowie nie ma prawa zablokować
+  pilota na zawsze.
+- **Limit tempa** (`POKAZ_ODSTEP_S`) liczy się od chwili zlecenia. Każde
+  naciśnięcie kafelka to pełne odświeżenie panelu, a pilot kusi do klikania.
+- **Losowanie omija ostatnio pokazane zdjęcia** (`historia_zdjec.py`,
+  `ZDJECIA_BEZ_POWTORKI`), ale nigdy nie wyklucza wszystkich kandydatów. Dotyczy
+  obu dróg, pilota i harmonogramu: bez tego naciśnięcie kafelka potrafi po
+  czterdziestu sekundach renderu pokazać dokładnie to samo zdjęcie.
+- **Sieć: oba urządzenia siedzą w domowym Wi-Fi**, zegarek rozmawia z ramką po
+  HTTP w LAN-ie. Ramka **nie** wystawia własnej sieci – Pi Zero 2 W ma jedno
+  radio, więc tryb AP odciąłby ją od OpenWeatherMap i od `git pull`.
+- Uwierzytelniania nie ma, tak jak w reszcie serwisu. Gdyby ramka miała kiedyś
+  wyjść poza sieć domową, token zakłada się na **wszystkie** trasy naraz, nie na
+  tę jedną.
 
 ## Cron na Pi
 
