@@ -60,6 +60,10 @@ PHOTO_UNSHARP = (1.2, 80, 3)     # promień, siła %, próg – po redukcji 6000
 PHOTO_CONTRAST = 1.15            # 1.0 = bez zmian; paleta e-papieru spłaszcza kontrast
 PHOTO_SATURATION = 0.5           # przekazywane do inky.set_image()
 
+# Ile ostatnio pokazanych zdjęć omijamy przy losowaniu. Bez tego ta sama
+# fotografia potrafi wrócić na ekran zaraz po tym, jak z niego zeszła.
+ZDJECIA_BEZ_POWTORKI = 10
+
 # --- Pilot: komendy z zegarka -------------------------------------------------
 # Zegarek wysyła jednorazowe zlecenie „pokaż to teraz". Render nie rusza
 # harmonogramu – sekwencja odzyskuje ekran przy najbliższym takcie, który uzna
