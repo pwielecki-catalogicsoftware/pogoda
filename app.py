@@ -7,6 +7,7 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 
 import display_schedule as ds
+import komenda
 
 app = Flask(__name__)
 
@@ -20,7 +21,7 @@ def allowed(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED
 
 
-def wywolaj_tick():
+def wywolaj_tick(argumenty=("--force",)):
     """Odpala takt poza kolejnością, żeby zmiana zadziałała od razu.
 
     Blokada w tick.py pilnuje, żeby nie wszedł w drogę taktowi z crona. Serwis
@@ -29,7 +30,7 @@ def wywolaj_tick():
     """
     try:
         subprocess.Popen(
-            [sys.executable, str(BASE_DIR / "tick.py"), "--force"],
+            [sys.executable, str(BASE_DIR / "tick.py"), *argumenty],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
     except OSError as blad:
@@ -141,6 +142,33 @@ def pokaz_pogode():
     return jsonify(stan_harmonogramu())
 
 
+@app.route("/akcja/pokaz", methods=["POST"])
+def pokaz():
+    """Pilot (zegarek): pokaż to teraz, jeden raz.
+
+    W odróżnieniu od /akcja/pogoda nie przestawia sekwencji. Rysujemy raz, a
+    harmonogram odzyskuje ekran przy najbliższym takcie, który uzna bieżący krok
+    za wyczerpany – pilot niczego nie zapamiętuje i niczego nie psuje.
+
+    Odpowiedź wraca natychmiast, bo render trwa kilkadziesiąt sekund i zegarek
+    zdąży zgasnąć. Wynik odczyta z /stan przy następnym wejściu na ekran ramki.
+    """
+    co = (request.get_json(silent=True) or {}).get("co")
+    if co not in ds.TYPY:
+        return jsonify({"blad": "Nieznany rodzaj widoku."}), 400
+    if komenda.trwa():
+        return jsonify({"blad": "Ramka właśnie rysuje."}), 409
+    zostalo = komenda.za_wczesnie()
+    if zostalo:
+        # każde zlecenie to pełne odświeżenie panelu, a pilot kusi do klikania
+        return jsonify({"blad": "Za wcześnie na kolejne odświeżenie.",
+                        "za_ile_s": zostalo}), 429
+
+    komenda.zapisz_zlecenie(co)
+    wywolaj_tick(["--pokaz", co])
+    return jsonify(stan_harmonogramu())
+
+
 @app.route("/stan")
 def stan():
     return jsonify(stan_harmonogramu())
@@ -158,6 +186,8 @@ def stan_harmonogramu(ustawienia=None):
         "ile_krokow": len(sekwencja),
         "sekund_do_zmiany": ds.sekund_do_zmiany(ustawienia),
         "odswiezen": ds.odswiezen_na_dobe(ds.aktywna_sekwencja(ustawienia)),
+        # ostatnia komenda z pilota: None, dopóki zegarek o nic nie poprosił
+        "komenda": komenda.podsumowanie(),
     }
 
 

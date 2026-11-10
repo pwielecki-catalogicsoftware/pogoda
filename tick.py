@@ -16,6 +16,9 @@ Uruchomienie z crona:
 
 Wymuszenie natychmiastowego przerysowania (użyje tego serwis webowy):
     python tick.py --force
+
+Jednorazowy render zlecony z pilota (zegarka) – nie rusza harmonogramu:
+    python tick.py --pokaz prognoza
 """
 
 import sys
@@ -23,6 +26,7 @@ from datetime import datetime
 from pathlib import Path
 
 import display_schedule as ds
+import komenda
 
 BASE_DIR = Path(__file__).resolve().parent
 LOCK_FILE = BASE_DIR / "output" / ".tick.lock"
@@ -95,13 +99,53 @@ def renderuj(typ):
     return False
 
 
+def argument(nazwa):
+    """Wartość stojąca w argv za przełącznikiem, albo None."""
+    try:
+        return sys.argv[sys.argv.index(nazwa) + 1]
+    except (ValueError, IndexError):
+        return None
+
+
+def pokaz_z_pilota(typ):
+    """Jednorazowy render zlecony z zegarka.
+
+    Harmonogram zostaje nietknięty – stanu sekwencji nie zapisujemy, więc ramka
+    wraca do swojego rytmu przy najbliższym takcie, który uzna bieżący krok za
+    wyczerpany. Wynik zostaje w komenda.json, bo zegarek dawno zgasł i nie ma go
+    komu podać od razu.
+    """
+    if typ not in ds.TYPY:
+        log(f"pilot: nieznany rodzaj widoku: {typ}")
+        komenda.zapisz_wynik(komenda.BLAD, "nieznany rodzaj widoku")
+        return 0
+
+    log(f"pilot: {typ}")
+    try:
+        udalo_sie = renderuj(typ)
+    except Exception as blad:
+        log(f"pilot: render nie powiódł się: {blad}")
+        komenda.zapisz_wynik(komenda.BLAD, str(blad))
+        return 0
+
+    komenda.zapisz_wynik(komenda.GOTOWE if udalo_sie else komenda.BLAD,
+                         "" if udalo_sie else "nie udało się narysować")
+    return 0
+
+
 def main():
     wymuszenie = "--force" in sys.argv
+    pokaz = argument("--pokaz")
 
     with Blokada(LOCK_FILE) as wolne:
         if not wolne:
             log("inny takt trwa – pomijam")
+            if pokaz:
+                komenda.zapisz_wynik(komenda.BLAD, "ekran był zajęty")
             return 0
+
+        if pokaz:
+            return pokaz_z_pilota(pokaz)
 
         krok, indeks, sekwencja, powod = ds.co_teraz()
 

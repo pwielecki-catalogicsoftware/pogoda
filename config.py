@@ -59,3 +59,13 @@ PHOTO_CENTERING = (0.5, 0.4)
 PHOTO_UNSHARP = (1.2, 80, 3)     # promień, siła %, próg – po redukcji 6000 -> 800 px
 PHOTO_CONTRAST = 1.15            # 1.0 = bez zmian; paleta e-papieru spłaszcza kontrast
 PHOTO_SATURATION = 0.5           # przekazywane do inky.set_image()
+
+# --- Pilot: komendy z zegarka -------------------------------------------------
+# Zegarek wysyła jednorazowe zlecenie „pokaż to teraz". Render nie rusza
+# harmonogramu – sekwencja odzyskuje ekran przy najbliższym takcie, który uzna
+# bieżący krok za wyczerpany.
+
+POKAZ_ODSTEP_S = 60        # minimalny odstęp między zleceniami: każde z nich to
+                           # pełne odświeżenie panelu, a pilot kusi do klikania
+POKAZ_MAX_CZAS_S = 180     # po tylu sekundach zlecenie bez wyniku uznajemy za
+                           # przepadłe – inaczej zabity render blokowałby pilota
