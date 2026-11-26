@@ -136,6 +136,17 @@ po czym odpala `tick.py --force` przez `subprocess.Popen` i nie czeka na wynik �
 render e-papieru trwa kilkadziesiąt sekund, a strona ma odpowiedzieć od razu.
 Rysowanie zostaje wyłączną robotą taktu, więc ekran ma jednego właściciela.
 
+**Takt odpala się interpreterem z `config.PYTHON_BIN`, a nie tym, którym uruchomiono
+serwis.** Biblioteki sprzętowe (`inky`) mieszkają w venvie `pimoroni`: serwis
+uruchomiony systemowym pythonem przestawiał stan, po czym render wywracał się na
+imporcie. Takty z crona rysowały normalnie, więc przycisk wyglądał nie tyle na
+zepsuty, co na martwy. Ścieżka obowiązuje tylko wtedy, gdy istnieje – na biurku
+zadziała interpreter, którym uruchomiono serwis.
+
+Wszystko, co takt wypisze, idzie do `config.TICK_LOG` (`/tmp/tick.log`) – tego samego
+pliku, do którego loguje cron. **Nie kieruj tego z powrotem do `DEVNULL`**: serwis nie
+czeka na wynik, więc log jest jedynym śladem po tym, co się wydarzyło po kliknięciu.
+
 Trasy harmonogramu: `GET /harmonogram`, `POST /harmonogram/zapisz` (JSON),
 `POST /akcja/nastepny`, `POST /akcja/pogoda` (przewija do najbliższego kroku
 z prognozą; 400, gdy sekwencja jej nie zawiera), `GET /stan` dla paska stanu.
@@ -225,7 +236,9 @@ wpisów spoza projektu):
 Takt sprawdza, czy bieżący krok sekwencji się wyczerpał. Jeśli nie, kończy się po ułamku
 sekundy **bez importowania `inky` i `PIL`** – ciężkie moduły ładują się dopiero przy
 faktycznym renderze. Blokada plikowa (`output/.tick.lock`) pilnuje, żeby dwa takty nie
-pisały naraz po SPI; render pogody bywa dłuższy niż minuta.
+pisały naraz po SPI; render pogody bywa dłuższy niż minuta. Gdy pliku blokady nie da
+się otworzyć – zwykle należy do innego użytkownika, bo serwis chodzi jako root, a cron
+jako `piter` – takt melduje powód w logu i odpuszcza, zamiast wywalić się tracebackiem.
 
 Dlaczego takt, a nie demon: proces kończący się po każdym takcie nie ma jak spuchnąć
 na 512 MB, a gdy raz padnie, następna minuta go naprawia. Demon, który padłby w nocy,
