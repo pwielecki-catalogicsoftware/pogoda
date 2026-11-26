@@ -73,3 +73,19 @@ POKAZ_ODSTEP_S = 60        # minimalny odstęp między zleceniami: każde z nich
                            # pełne odświeżenie panelu, a pilot kusi do klikania
 POKAZ_MAX_CZAS_S = 180     # po tylu sekundach zlecenie bez wyniku uznajemy za
                            # przepadłe – inaczej zabity render blokowałby pilota
+
+# --- Takt odpalany z serwisu webowego -----------------------------------------
+# Serwis sam nigdy nie rysuje – odpala tick.py w osobnym procesie. Musi to zrobić
+# TYM SAMYM interpreterem, co cron: `inky` i reszta sprzętowych bibliotek siedzą
+# w wirtualnym środowisku, a serwis bywa uruchamiany systemowym pythonem. Wtedy
+# render z przycisku wywracał się na imporcie, podczas gdy takt z crona rysował
+# normalnie – przycisk wyglądał na martwy.
+#
+# Ścieżka obowiązuje tylko wtedy, gdy istnieje. Na biurku jej nie ma, więc tam
+# zadziała interpreter, którym uruchomiono serwis.
+
+PYTHON_BIN = "/home/piter/.virtualenvs/pimoroni/bin/python"
+
+# Dokąd trafia to, co takt wypisze. Ten sam plik, do którego loguje cron –
+# inaczej takt z przycisku padałby bez śladu. Pusta wartość = do kosza.
+TICK_LOG = "/tmp/tick.log"

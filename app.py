@@ -6,6 +6,7 @@ from flask import Flask, jsonify, redirect, render_template, request, send_from_
 from PIL import Image
 from werkzeug.utils import secure_filename
 
+import config
 import display_schedule as ds
 import komenda
 
@@ -21,20 +22,50 @@ def allowed(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED
 
 
+def interpreter():
+    """Wskazuje pythona, który ma odpalić takt – patrz PYTHON_BIN w config.py."""
+    wskazany = getattr(config, "PYTHON_BIN", "")
+    if wskazany and Path(wskazany).exists():
+        return wskazany
+    return sys.executable
+
+
+def dziennik():
+    """Otwiera plik, do którego takt dopisze swoje wypisy.
+
+    Zwraca uchwyt albo DEVNULL, gdy pisać nie ma gdzie – brak logu nie może
+    powstrzymać renderu.
+    """
+    sciezka = getattr(config, "TICK_LOG", "")
+    if not sciezka:
+        return subprocess.DEVNULL
+    try:
+        return open(sciezka, "a", encoding="utf-8")
+    except OSError as blad:
+        app.logger.warning("nie mogę pisać do %s: %s", sciezka, blad)
+        return subprocess.DEVNULL
+
+
 def wywolaj_tick(argumenty=("--force",)):
     """Odpala takt poza kolejnością, żeby zmiana zadziałała od razu.
 
     Blokada w tick.py pilnuje, żeby nie wszedł w drogę taktowi z crona. Serwis
     nie czeka na wynik – render e-papieru trwa kilkadziesiąt sekund, a strona
-    ma się odświeżyć natychmiast.
+    ma się odświeżyć natychmiast. Dlatego jedynym śladem po tym, co się
+    wydarzyło, jest log: wszystko, co takt wypisze, idzie do TICK_LOG.
     """
+    log = dziennik()
     try:
         subprocess.Popen(
-            [sys.executable, str(BASE_DIR / "tick.py"), *argumenty],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            [interpreter(), str(BASE_DIR / "tick.py"), *argumenty],
+            stdout=log, stderr=subprocess.STDOUT,
         )
     except OSError as blad:
         app.logger.warning("nie udało się uruchomić taktu: %s", blad)
+    finally:
+        # Dziecko dostało własną kopię uchwytu – nasza jest już niepotrzebna.
+        if log is not subprocess.DEVNULL:
+            log.close()
 
 
 # ---------------------------------------------------------------- zdjęcia
