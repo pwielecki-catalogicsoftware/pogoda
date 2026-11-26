@@ -52,10 +52,18 @@ class Blokada:
     def __init__(self, sciezka):
         self.sciezka = sciezka
         self.uchwyt = None
+        self.powod = ""
 
     def __enter__(self):
-        self.sciezka.parent.mkdir(parents=True, exist_ok=True)
-        self.uchwyt = open(self.sciezka, "w")
+        try:
+            self.sciezka.parent.mkdir(parents=True, exist_ok=True)
+            self.uchwyt = open(self.sciezka, "w")
+        except OSError as blad:
+            # Zwykle plik blokady należy do innego użytkownika: serwis webowy
+            # chodzi jako root, cron jako piter albo odwrotnie. Bez tego takt
+            # wywracał się tracebackiem, zanim cokolwiek zdążył zalogować.
+            self.powod = f"blokada niedostępna ({blad.strerror or blad})"
+            return False
         try:
             import fcntl
         except ImportError:
@@ -65,6 +73,7 @@ class Blokada:
         except OSError:
             self.uchwyt.close()
             self.uchwyt = None
+            self.powod = "inny takt trwa"
             return False
         return True
 
@@ -137,11 +146,12 @@ def main():
     wymuszenie = "--force" in sys.argv
     pokaz = argument("--pokaz")
 
-    with Blokada(LOCK_FILE) as wolne:
+    blokada = Blokada(LOCK_FILE)
+    with blokada as wolne:
         if not wolne:
-            log("inny takt trwa – pomijam")
+            log(f"{blokada.powod} – pomijam")
             if pokaz:
-                komenda.zapisz_wynik(komenda.BLAD, "ekran był zajęty")
+                komenda.zapisz_wynik(komenda.BLAD, blokada.powod)
             return 0
 
         if pokaz:
